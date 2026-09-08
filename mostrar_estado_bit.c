@@ -1,26 +1,12 @@
-/******************************************************************************
-
-                            Online C Compiler.
-                Code, Compile, Run and Debug C program online.
-Write your code in this editor and press "Run" button to compile and execute it.
-
-*******************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-/**
- * @brief Cantidad de bits en un byte de ancho fijo de 8 bits.
- */
+
 #define BITS_POR_BYTE (8U)
 
-/**
- * @brief Imprime la representación binaria (8 bits) de un byte.
- * 
- * @param[in] byte_entrada Byte a inspeccionar.
- */
+
 static void mostrar_bits_byte(const uint8_t byte_entrada)
 {
     /* Recorrido desde el bit MSB (7) hasta el LSB (0) */
