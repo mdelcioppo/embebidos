@@ -63,7 +63,34 @@ Para la selección del proyecto se establecieron 6 criterios característicos po
 De acuerdo con la ponderación de la Tabla 1.2.1, se eligió implementar el **Horno Inteligente Completo con STM32**. Esta alternativa aprovecha los periféricos de la placa STM32 (ADC, Timers/PWM, UART, I2C/SPI, GPIOs) e integra la lógica de control en un sistema alimentado por eventos (*Event-Triggered System*).
 
 #### **1.3.1 Diagrama en bloques del sistema**
-
+                               ┌─────────────────────────┐
+                               │    Aplicación Móvil     │
+                               └────────────┬────────────┘
+                                            │ Bluetooth (BLE)
+                                            ▼
+┌─────────────────────────┐    ┌─────────────────────────┐    ┌─────────────────────────┐
+│     EEPROM Externa      │◄──►│  Módulo Bluetooth HM10  │◄──►│       PC (Debug)        │
+└─────────────────────────┘I2C └────────────┬────────────┘UART└─────────────────────────┘UART
+                                            │
+                                            ▼
+                               ┌─────────────────────────┐    ┌─────────────────────────┐
+                               │                         ├───►│  Display LCD (2x16/20x4)│
+                               │                         │GPIO└─────────────────────────┘
+                               │                         │    ┌─────────────────────────┐
+                               │                         ├───►│      Buzzer Sonoro      │
+                               │                         │PWM └─────────────────────────┘
+┌─────────────────────────┐    │                         │    ┌─────────────────────────┐
+│  Teclado Matricial      ├───►│                         ├───►│  Luz Interna Dimerizada │
+└─────────────────────────┘GPIO│     Microcontrolador    │PWM └─────────────────────────┘
+┌─────────────────────────┐    │          STM32          │    ┌─────────────────────────┐
+│      Dip Switches       ├───►│                         ├───►│     LEDs Indicadores    │
+└─────────────────────────┘GPIO│  (Event-Triggered System│GPIO└─────────────────────────┘
+┌─────────────────────────┐    │        Bare Metal)      │    ┌─────────────────────────┐
+│ Potenciómetro Ajuste    ├───►│                         ├───►│ Actuador de Resistencias│
+└─────────────────────────┘ADC │                         │GPIO└─────────────────────────┘
+┌─────────────────────────┐    │                         │
+│ Sensor de Temperatura   ├───►│                         │
+└─────────────────────────┘ADC └─────────────────────────┘
 
 ---
 
