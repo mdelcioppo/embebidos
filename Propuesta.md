@@ -69,14 +69,32 @@ De acuerdo con la ponderación de la Tabla 1.2.1, se eligió implementar el **Ho
 ---
 
 ## 2. Elicitación de requisitos y casos de uso
-En Argentina existen varios productos de características similares a las del proyecto, cada producto diferenciándose de otro con detalles, como por ejemplo huellas digitales, llaves, etc. Sin embargo, parecería que no hay un producto en Argentina que cumpla exactamente la misma función que el proyecto desarrollado.
 
-Como primer competidor del mercado se puede mencionar a Yale, la cual ofrece una amplia gama de cerraduras digitales inteligentes para seguridad del hogar. Los precios de sus productos orbitan desde los 45.000 hasta los 600.000 pesos y sus productos incluyen desde cerraduras con teclado matricial hasta cerraduras con huellas digitales, todas con una aplicación para el celular. El proyecto tiene similitudes en el teclado matricial y en la aplicación, pero se diferencia en la oferta de los sensores magnéticos, del lector RFID y de la comunicación con parlante y micrófono.
+### 2.1 Análisis de la competencia y diferenciación del producto
 
-Un segundo competidor es Philips, la cual tiene productos con reconocimiento facial y video portero. Esta tecnología es considerablemente superior al igual que sus precios, los cuales rondan el 1.000.000 de pesos. Sin embargo, la empresa no cuenta con lectores RFID ni sensores magnéticos, lo cual diferencia a nuestro proyecto.
+En el mercado argentino existen diversos electrodomésticos y controladores orientados a la cocción y el control térmico. Sin embargo, la gran mayoría se limita a funciones mecánicas tradicionales o carece de una integración completa entre control de potencia, menús locales avanzados e interfaces de comunicación inalámbrica autónomas.
 
-En resumen, el mercado es sumamente competitivo y las características y funcionalidades de la cerradura pueden ser modificadas y ampliadas fácilmente, permitiendo desarrollar productos únicos y distintos de la competencia que encuentren un lugar en el mercado.
-### 2.1 Requisitos del proyecto
+Como primeros competidores directos en el mercado local se identifican:
+
+1. **Hornos Eléctricos Digitales Smart (ej. Yelmo / Smartlife):**
+   * Incorporan pantallas LED/LCD simples, selección táctil de resistencias y conectividad Wi-Fi/Bluetooth mediante plataformas globales (como Tuya o Smart Life).
+   * **Limitaciones:** Sus aplicaciones móviles son cerradas y genéricas: solo permiten encender/apagar o enviar una temporización simple. No posibilitan la programación de curvas de cocción dinámicas por etapas (por ejemplo: 20 minutos a 180 °C con resistencia inferior, seguidos de 10 minutos a 220 °C con grill y luz dimerizada). Además, su firmware es propietario e inaccesible para mantenimiento o actualización.
+
+2. **Controladores Térmicos y Termostatos Bluetooth/Wi-Fi (ej. Inkbird ITC / Xiaomi Smart Oven):**
+   * Dispositivos de control térmico que integran enlaces inalámbricos para monitorear lecturas en tiempo real desde el celular y emitir alertas.
+   * **Limitaciones:** Los controladores tipo termostato externo carecen de la interfaz para gestionar los actuadores específicos de un horno (resistencias independientes, sistema de convección, dimerización de luz interna). Por otro lado, los hornos de ecosistemas cerrados requieren conexión obligatoria a servidores en la nube y carecen de almacenamiento físico no volátil en el propio equipo para operar sin conexión a internet.
+
+---
+
+#### Diferenciación y ventajas del prototipo desarrollado
+
+El **Sistema Controlador de Horno Eléctrico Inteligente** diseñado sobre la plataforma **STM32** se destaca por las siguientes ventajas competitivas:
+
+* **Autonomía y Persistencia Local (EEPROM / Flash):** A diferencia de las soluciones comerciales que dependen de servidores en la nube, el sistema almacena las recetas y perfiles de cocción de múltiples etapas directamente en la memoria **EEPROM externa (I2C) o Flash interna**. La curva térmica se ejecuta de forma autónoma sin riesgo de interrupción si se pierde la conexión Bluetooth.
+* **Interfaz de Usuario Híbrida y Accesible:** Combina un panel local completo (pantalla LCD 2x16/20x4, teclado matricial, potenciómetro analógico y **Dip Switches** para selección inmediata del modo de calor) con control y monitoreo remoto a través del módulo **HM-10 (BLE)**. El usuario mantiene el control absoluto tanto en modo manual como remoto.
+* **Arquitectura de Tiempo Real No Bloqueante (*Bare Metal*):** Su estructura basada en un sistema alimentado por eventos (*Event-Triggered System*), *Super-Loop* y *Tick* de 1 ms garantiza el procesamiento en tiempo real sin bloqueos, permitiendo un control térmico preciso, gestión inmediata de alarmas de seguridad con el **Buzzer** y la adición de periféricos por buses estándar (I2C, SPI, UART).
+
+Es decir que si bien se presenta un mercado competitivo en términos de alternativas, el diseño propio cuenta con ventajas a explotar y tiene una inserción posible en la industria debido a que no todas las funcionalidades propuestas están siendo ofrecidas por otras marcas o por lo menos no de manera conjunta como lo haría nuestro prototipo.
 
 | Grupo | ID | Descripción |
 | :--- | :--- | :--- |
@@ -93,10 +111,13 @@ En resumen, el mercado es sumamente competitivo y las características y funcion
 | **Persistencia y Seguridad**| **5.1** | El sistema almacenará la configuración y recetas de usuario en memoria **EEPROM externa** (I2C) o **Flash interna**. |
 | | **5.2** | Si la temperatura medida supera un límite de seguridad, el sistema desactivará el calentamiento e indicará estado de **FALLA**. |
 | **Arquitectura de Firmware**| **6.1** | El firmware se desarrollará bajo esquema *Bare Metal* sin RTOS, como un sistema guiado por eventos (*Event-Triggered System*) con ciclo principal (*Super-Loop*) y *Tick* de 1 ms. |
+<p align="center"><em>Tabla 2.1: Requisitos del proyecto.</em></p>
 
 ---
 
 ### 2.2 Casos de uso
+
+A continuación se presentan 3 casos de usos que creemos de relevancia para dar una idea de funcionamiento del proyecto y sus diferentes alternativas al ser utilizado por el usuario.
 
 #### **Caso de Uso 1: Configuración e inicio de cocción manual desde la interfaz local**
 
@@ -106,6 +127,7 @@ En resumen, el mercado es sumamente competitivo y las características y funcion
 | **Precondiciones** | El sistema está encendido en estado **IDLE/NORMAL**. El horno está a temperatura ambiente y la puerta cerrada. |
 | **Flujo Principal** | 1. El usuario configura los **Dip Switches** para elegir la distribución de calor (ej: Resistencia Superior + Inferior).<br>2. El usuario navega en el **LCD** con el teclado para fijar la temperatura objetivo y el tiempo de cocción.<br>3. El usuario utiliza el potenciómetro para ajustar la intensidad de iluminación interna.<br>4. El usuario confirma el inicio con el botón "Enter".<br>5. El sistema activa el control térmico, enciende los LEDs de calentamiento e inicia el temporizador.<br>6. Al finalizar el tiempo, el sistema apaga los elementos calefactores y hace sonar el **Buzzer**. |
 | **Flujos Alternativos** | **a. Alarma de Sobretemperatura:** Si la temperatura medida excede el límite máximo de seguridad, el sistema interrumpe el calentamiento, pasa a estado de **FALLA**, emite un tono continuo con el Buzzer y muestra la alerta en el LCD.<br>**b. Cancelación manual:** Si el usuario presiona el botón "Escape", el proceso se detiene y regresa al menú principal. |
+<p align="center"><em>Tabla 2.2: Caso de Uso 1 del proyecto.</em></p>
 
 #### **Caso de Uso 2: Control y monitoreo remoto vía Bluetooth (App)**
 
@@ -115,6 +137,7 @@ En resumen, el mercado es sumamente competitivo y las características y funcion
 | **Precondiciones** | El módulo Bluetooth **HM-10** está emparejado correctamente con el dispositivo móvil. El sistema está encendido. |
 | **Flujo Principal** | 1. La aplicación solicita la lectura actual de temperatura e información de estado.<br>2. El microcontrolador responde vía UART con los datos estructurados.<br>3. El usuario selecciona una "Receta Predefinida" en la App y presiona "Iniciar Receta".<br>4. La App transmite la temperatura objetivo y el tiempo a través de comandos de texto por Bluetooth.<br>5. El sistema confirma la recepción mediante un tono breve en el **Buzzer**, actualiza la pantalla LCD y comienza el proceso. |
 | **Flujos Alternativos** | **a. Pérdida de Conexión BLE:** Si se desconecta la App durante una cocción en curso, el horno continúa ejecutando el perfil previamente cargado en memoria de forma segura. |
+<p align="center"><em>Tabla 2.3: Caso de Uso 2 del proyecto.</em></p>
 
 #### **Caso de Uso 3: Almacenamiento y recuperación de recetas en memoria no volátil**
 
@@ -124,3 +147,4 @@ En resumen, el mercado es sumamente competitivo y las características y funcion
 | **Precondiciones** | El sistema está encendido. La memoria **EEPROM / Flash interna** está inicializada. |
 | **Flujo Principal** | 1. Desde el menú en la pantalla LCD (o desde la App), el usuario selecciona "Guardar Receta #1".<br>2. El sistema toma los valores actuales de temperatura, tiempo y fuente de calor y los escribe mediante bus I2C en la EEPROM no volátil.<br>3. El sistema confirma la persistencia guardada mostrando un mensaje en pantalla y un pitido del **Buzzer**.<br>4. Ante un eventual reinicio, el sistema lee la EEPROM durante la secuencia de arranque y carga los valores predeterminados. |
 | **Flujos Alternativos** | **a. Error en la comunicación con EEPROM:** Si falla el bus I2C, el sistema notifica el fallo en el LCD y utiliza parámetros por defecto almacenados en la memoria ROM. |
+<p align="center"><em>Tabla 2.4: Caso de Uso 4 del proyecto.</em></p>
