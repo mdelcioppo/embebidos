@@ -7,30 +7,30 @@
 **Autores:** Matías Del Cioppo, Luciano Andrés Ferrua y Lautaro Ignacio Franco  
 **Padrones:** 107453, 109609, 112572  
 **Fecha:** 2do cuatrimestre 2026  
-**Curso / Grupo:** Curso 1 - Grupo XX  
+**Curso / Grupo:** Curso 1 - Grupo 02  
 
 ---
 
 ## 1. Selección del proyecto a implementar
 
 ### 1.1 Objetivo del proyecto y resultados esperados
-El objetivo principal de este proyecto es diseñar e implementar un **controlador de horno eléctrico inteligente** basado en la placa de desarrollo **STM32**. El sistema permitirá gestionar el proceso de cocción mediante la selección de modos de operación, control preciso de temperatura, temporización y ajuste del sentido/fuente de calor (spit roaster/resistencias superiores, inferiores o convector).
+El objetivo principal de este proyecto es diseñar e implementar un **controlador de horno eléctrico inteligente** basado en la placa de desarrollo **STM32**. El sistema permitirá gestionar el proceso de cocción mediante la selección de modos de operación, control preciso de temperatura, temporización y ajuste del sentido/fuente de calor (superior, inferior, ambos, etc).
 
 Adicionalmente, el sistema ofrecerá:
 * **Conectividad remota vía Bluetooth (módulo HM-10):** Monitoreo y configuración de recetas o parámetros desde una aplicación móvil.
-* **Interfaz de usuario local e interactiva:** Basada en pantalla LCD 2x16/20x4, teclado matricial de entrada, Dip Switches de selección rápida y potenciómetro para ajuste de intensidad de luz interna o regulación fina.
-* **Seguridad y señalización:** Medición de temperatura en tiempo real mediante sensor térmico (ADC/NTC o MAX6675/K-Type), sistema de alarmas acústicas mediante Buzzer y luces indicadoras de estado.
+* **Interfaz de usuario local e interactiva:** Basada en pantalla LCD 2x16/20x4, teclado matricial de entrada, Dip Switches de selección rápida y potenciómetro para ajuste de intensidad de luz interna o regulación fina de temperatura.
+* **Seguridad y señalización:** Medición de temperatura en tiempo real mediante sensor térmico (ADC/NTC o MAX6675/K-Type), sistema de alarmas acústicas mediante Buzzer (y alertas mediante Bluetooth) y luces indicadoras de estado.
 * **Almacenamiento persistente:** Guardado de perfiles de cocción (recetas) y configuraciones en memoria Flash interna o EEPROM externa I2C.
 
-Este prototipo busca proporcionar un Producto Mínimo Viable (PMV) modular y adaptable a electrodomésticos comerciales (como hornos Gadnic, TopHouse, etc.), priorizando la precisión técnica, la seguridad operativa y el uso eficiente de los recursos del microcontrolador.
+Este prototipo busca proporcionar un Producto Mínimo Viable (MVP) modular y adaptable a electrodomésticos comerciales (como hornos Gadnic, TopHouse, etc.), priorizando la precisión técnica, la seguridad operativa y el uso eficiente de los recursos del microcontrolador. Por último, se busca en este proyecto poder presentar el controlador diseñado cómo un modelo comerciable.
 
 ---
 
 ### 1.2 Proyectos similares
 
-Se evaluaron tres alternativas de prototipos para el control térmico de cocción:
+Basados en nuestros conocimientos previos e investigación sobre el desarrollo que deseamos implementar, se evaluaron tres alternativas de prototipos para el control térmico de cocción:
 
-1. **Horno Inteligente Completo (STM32):** Control de temperatura con sensor en tiempo real, menú interactivo en LCD, conectividad Bluetooth (HM-10), dimming/luces, teclado, Dip Switches, alertas sonoras con Buzzer y almacenamiento de recetas en Flash/EEPROM.
+1. **Horno Inteligente Completo (STM32):** Control de temperatura con sensor en tiempo real, menú interactivo en LCD, conectividad Bluetooth (HM-10), dimming/luces, teclado, Dip Switches, alertas sonoras con Buzzer y almacenamiento de recetas/modos de cocción en Flash/EEPROM.
 2. **Controlador Básico de Horno (STM32):** Control de temperatura ON/OFF mediante potenciómetro, lectura analógica sin menú interactivo ni conectividad remota.
 3. **Temporizador / Termostato genérico (Arduino UNO):** Control básico temporizado sin arquitectura no bloqueante ni integración con componentes embebidos de grado industrial.
 
@@ -44,10 +44,10 @@ Para la selección del proyecto se establecieron 6 criterios característicos po
 * **Interés personal del grupo (Peso: 8):** Motivación por aplicar los conocimientos del curso en un electrodoméstico de uso cotidiano.
 
 #### **Tabla 1.2.1: Comparación de alternativas de proyectos**
-
+Para la selección del proyecto se utilizaron los criterios numerados previamente y se evaluaron de la siguiente manera:
 | Criterio | Horno Inteligente STM32 (Seleccionado) | Controlador Básico STM32 | Termostato Básico Arduino |
 | :--- | :---: | :---: | :---: |
-| **Puntaje / Ponderado** | **Puntaje \| P. Ponderado** | **Puntaje \| P. Ponderado** | **Puntaje \| P. Ponderado** |
+| **Puntaje / P. Ponderado** | **Puntaje \| P. Ponderado** | **Puntaje \| P. Ponderado** | **Puntaje \| P. Ponderado** |
 | Disponibilidad de Hardware (peso: 10) | 10 \| 100 | 10 \| 100 | 10 \| 100 |
 | Calidad de Experiencia de Usuario (peso: 8) | 10 \| 80 | 5 \| 40 | 4 \| 32 |
 | Escalabilidad y Flexibilidad (peso: 8) | 9 \| 72 | 5 \| 40 | 3 \| 24 |
@@ -55,7 +55,7 @@ Para la selección del proyecto se establecieron 6 criterios característicos po
 | Costo (peso: 5) | 7 \| 35 | 9 \| 45 | 9 \| 45 |
 | Interés Personal (peso: 8) | 10 \| 80 | 6 \| 48 | 4 \| 32 |
 | **Puntaje Total** | **439** | **354** | **314** |
-
+<p align="center"><em>Tabla 1.1: Comparación de alternativas de proyectos.</em></p>
 ---
 
 ### 1.3 Selección de proyecto
@@ -64,12 +64,18 @@ De acuerdo con la ponderación de la Tabla 1.2.1, se eligió implementar el **Ho
 
 #### **1.3.1 Diagrama en bloques del sistema**
 
-<img width="3458" height="1921" alt="diagrama_bloques_horno" src="https://github.com/user-attachments/assets/72260bfc-85c5-414b-8dbd-23558bbe6a1b" />
-
+<img width="3458" height="1921" alt="diagrama_bloques_horno (1)" src="https://github.com/user-attachments/assets/1dbccc7c-bedc-4c05-a0a4-22f0845af83c" />
+<p align="center"><em>Figura 1.1: Ilustración del diagrama en bloques del horno eléctrico.</em></p>
 ---
 
 ## 2. Elicitación de requisitos y casos de uso
+En Argentina existen varios productos de características similares a las del proyecto, cada producto diferenciándose de otro con detalles, como por ejemplo huellas digitales, llaves, etc. Sin embargo, parecería que no hay un producto en Argentina que cumpla exactamente la misma función que el proyecto desarrollado.
 
+Como primer competidor del mercado se puede mencionar a Yale, la cual ofrece una amplia gama de cerraduras digitales inteligentes para seguridad del hogar. Los precios de sus productos orbitan desde los 45.000 hasta los 600.000 pesos y sus productos incluyen desde cerraduras con teclado matricial hasta cerraduras con huellas digitales, todas con una aplicación para el celular. El proyecto tiene similitudes en el teclado matricial y en la aplicación, pero se diferencia en la oferta de los sensores magnéticos, del lector RFID y de la comunicación con parlante y micrófono.
+
+Un segundo competidor es Philips, la cual tiene productos con reconocimiento facial y video portero. Esta tecnología es considerablemente superior al igual que sus precios, los cuales rondan el 1.000.000 de pesos. Sin embargo, la empresa no cuenta con lectores RFID ni sensores magnéticos, lo cual diferencia a nuestro proyecto.
+
+En resumen, el mercado es sumamente competitivo y las características y funcionalidades de la cerradura pueden ser modificadas y ampliadas fácilmente, permitiendo desarrollar productos únicos y distintos de la competencia que encuentren un lugar en el mercado.
 ### 2.1 Requisitos del proyecto
 
 | Grupo | ID | Descripción |
