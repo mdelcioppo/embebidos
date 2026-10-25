@@ -64,6 +64,8 @@ De acuerdo con la ponderación de la Tabla 1.2.1, se eligió implementar el **Ho
 
 #### **1.3.1 Diagrama en bloques del sistema**
 
+<img width="3458" height="1921" alt="diagrama_bloques_horno" src="https://github.com/user-attachments/assets/72260bfc-85c5-414b-8dbd-23558bbe6a1b" />
+
 ---
 
 ## 2. Elicitación de requisitos y casos de uso
